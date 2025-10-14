@@ -1,0 +1,23 @@
+# Node modules
+frontend/node_modules/
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+.env
+.env.*
+.DS_Store
+.idea/
+.vscode/
+
+# Build artifacts
+frontend/.next/
+frontend/out/
+backend/.mypy_cache/
+backend/.pytest_cache/
+
+# Python packaging
+*.egg-info/
+
+# Logs
+*.log
+
