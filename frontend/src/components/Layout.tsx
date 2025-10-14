@@ -7,8 +7,8 @@ interface LayoutProps {
 }
 
 export function Layout({
-  title = 'Builda - 智能装机顾问',
-  description = 'Next.js 前端 + FastAPI 后端基础框架',
+  title = 'Builda - PC Build Assistant',
+  description = 'Next.js frontend + FastAPI backend starter',
   children,
 }: PropsWithChildren<LayoutProps>) {
   return (
@@ -24,11 +24,11 @@ export function Layout({
           <div className="layout-header-content">
             <div>
               <span className="layout-brand">Builda</span>
-              <p className="layout-subtitle">React + FastAPI 装机推荐平台</p>
+              <p className="layout-subtitle">React + FastAPI PC build recommendation platform</p>
             </div>
             <div className="layout-tech-stack">
-              <span>LLM 驱动的装机规划</span>
-              <span>RAG 检索与兼容性校验</span>
+              <span>LLM-powered build planning</span>
+              <span>RAG retrieval and compatibility validation</span>
             </div>
           </div>
         </header>

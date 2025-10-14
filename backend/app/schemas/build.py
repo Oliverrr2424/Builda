@@ -7,16 +7,16 @@ from .chat import BuildComponent
 
 class BuildValidationItem(BaseModel):
     component: BuildComponent
-    quantity: int = Field(default=1, ge=1, description="组件数量")
+    quantity: int = Field(default=1, ge=1, description="Component quantity")
 
 
 class BuildValidationRequest(BaseModel):
-    items: List[BuildValidationItem] = Field(..., description="待校验的组件列表")
+    items: List[BuildValidationItem] = Field(..., description="List of components to validate")
 
 
 class BuildValidationResult(BaseModel):
-    is_valid: bool = Field(..., description="兼容性是否通过")
-    issues: List[str] = Field(default_factory=list, description="发现的问题列表")
+    is_valid: bool = Field(..., description="Whether compatibility checks passed")
+    issues: List[str] = Field(default_factory=list, description="List of discovered issues")
     recommendations: List[str] = Field(
-        default_factory=list, description="改进建议，例如升级电源"
+        default_factory=list, description="Improvement recommendations, e.g., upgrade the PSU"
     )

@@ -9,11 +9,11 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
     return (
       <div className="panel">
         <div className="panel-header">
-          <h2>方案卡片</h2>
-          <span className="panel-subtitle">生成的配置方案将展示在这里</span>
+          <h2>Plan Card</h2>
+          <span className="panel-subtitle">Generated build plans will be shown here</span>
         </div>
         <div className="empty-state">
-          <p>填写需求并发送后，Builda 会生成一套主机配置方案与备选方案。</p>
+          <p>After you describe your needs and send, Builda will generate a primary and an alternative PC build plan.</p>
         </div>
       </div>
     )
@@ -22,9 +22,9 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <h2>主方案</h2>
+        <h2>Primary Plan</h2>
         <span className="panel-subtitle">
-          总价约 {plan.total_price.toLocaleString()} {plan.currency}
+          Approx. total {plan.total_price.toLocaleString()} {plan.currency}
         </span>
       </div>
       <div className="plan-summary">
@@ -49,7 +49,7 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
       </div>
       {plan.alternatives.length > 0 && (
         <div className="plan-alternatives">
-          <h3>备选方案</h3>
+          <h3>Alternative Plans</h3>
           {plan.alternatives.map((alternative) => (
             <div key={alternative.title} className="plan-alternative">
               <div className="plan-alternative-header">
@@ -58,7 +58,7 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
                   <p>{alternative.description}</p>
                 </div>
                 <span>
-                  总价 {alternative.total_price.toLocaleString()} {plan.currency}
+                  Total {alternative.total_price.toLocaleString()} {plan.currency}
                 </span>
               </div>
               <ul>

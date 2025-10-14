@@ -5,46 +5,46 @@ from pydantic import BaseModel, Field
 
 
 class ChatMessage(BaseModel):
-    role: str = Field(..., description="消息角色，例如 user、assistant 或 system")
-    content: str = Field(..., description="消息内容")
+    role: str = Field(..., description="Message role, e.g., user, assistant, or system")
+    content: str = Field(..., description="Message content")
 
 
 class ChatPlanRequest(BaseModel):
     messages: List[ChatMessage] = Field(
-        ..., description="对话上下文，按时间顺序从最早到最新排列"
+        ..., description="Conversation context in chronological order from oldest to latest"
     )
     budget: Optional[float] = Field(
-        default=None, description="用户预算上限，单位 USD 或 CNY"
+        default=None, description="User budget cap, in USD or CNY"
     )
-    currency: str = Field(default="CNY", description="预算使用的货币单位")
-    locale: str = Field(default="zh-CN", description="用户偏好的区域信息")
+    currency: str = Field(default="CNY", description="Currency unit for the budget")
+    locale: str = Field(default="zh-CN", description="User preferred locale information")
 
 
 class BuildComponent(BaseModel):
-    category: str = Field(..., description="组件类别，例如 CPU、GPU")
-    name: str = Field(..., description="组件名称")
-    price: float = Field(..., description="组件价格")
-    vendor: str = Field(..., description="数据来源")
-    url: Optional[str] = Field(default=None, description="商品详情链接")
+    category: str = Field(..., description="Component category, e.g., CPU, GPU")
+    name: str = Field(..., description="Component name")
+    price: float = Field(..., description="Component price")
+    vendor: str = Field(..., description="Data source")
+    url: Optional[str] = Field(default=None, description="Product detail URL")
 
 
 class AlternativeBuild(BaseModel):
-    title: str = Field(..., description="备选方案标题")
-    description: str = Field(..., description="方案简要说明")
-    total_price: float = Field(..., description="方案总价")
-    components: List[BuildComponent] = Field(..., description="方案包含的组件列表")
+    title: str = Field(..., description="Alternative plan title")
+    description: str = Field(..., description="Brief description of the plan")
+    total_price: float = Field(..., description="Total price of the plan")
+    components: List[BuildComponent] = Field(..., description="Components included in the plan")
 
 
 class ChatPlanResponse(BaseModel):
-    plan_id: str = Field(..., description="方案标识")
+    plan_id: str = Field(..., description="Plan identifier")
     generated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="方案生成时间"
+        default_factory=datetime.utcnow, description="Time when the plan was generated"
     )
-    total_price: float = Field(..., description="主方案总价")
-    currency: str = Field(..., description="总价货币单位")
-    components: List[BuildComponent] = Field(..., description="主方案组件列表")
+    total_price: float = Field(..., description="Total price of the primary plan")
+    currency: str = Field(..., description="Currency unit for the total price")
+    components: List[BuildComponent] = Field(..., description="Components of the primary plan")
     alternatives: List[AlternativeBuild] = Field(
-        default_factory=list, description="备选方案列表"
+        default_factory=list, description="List of alternative plans"
     )
-    summary: str = Field(..., description="方案概要说明")
-    notes: Optional[str] = Field(default=None, description="额外提示或注意事项")
+    summary: str = Field(..., description="Plan summary")
+    notes: Optional[str] = Field(default=None, description="Additional tips or notes")

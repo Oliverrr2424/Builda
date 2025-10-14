@@ -12,9 +12,9 @@ export default function Home() {
     <Layout>
       <section className="page-hero">
         <div>
-          <h1>Builda 智能装机工作台</h1>
+          <h1>Builda PC Building Workbench</h1>
           <p>
-            结合 RAG 检索与 LLM 规划的装机顾问，提供兼容性校验、价格历史与备选方案。
+            A PC building assistant powered by RAG retrieval and LLM planning, with compatibility checks, price history, and alternatives.
           </p>
         </div>
         <div className="hero-meta">
@@ -30,21 +30,21 @@ export default function Home() {
 
       <section className="feature-grid">
         <div>
-          <h3>规划流程</h3>
+          <h3>Planning Flow</h3>
           <ul>
-            <li>意图解析：抽取预算、场景、品牌偏好</li>
-            <li>候选召回：pgvector + Redis 缓存高效检索</li>
-            <li>组装校验：规则层校对功耗与兼容性</li>
-            <li>LLM 生成：主/备方案、说明与价格时间戳</li>
+            <li>Intent parsing: extract budget, scenario, brand preferences</li>
+            <li>Candidate recall: pgvector + Redis cache for efficient retrieval</li>
+            <li>Assembly validation: rule layer checks power and compatibility</li>
+            <li>LLM generation: primary/alternative plans, notes, and price timestamps</li>
           </ul>
         </div>
         <div>
-          <h3>接入准备</h3>
+          <h3>Integration Prep</h3>
           <ul>
-            <li>Playwright/Scrapy 抓取多渠道 SKU 数据</li>
-            <li>PostgreSQL + pgvector 存储规格与嵌入</li>
-            <li>Redis 处理会话、缓存与频控</li>
-            <li>OpenAI / Azure OpenAI API 密钥保存在 .env</li>
+            <li>Playwright/Scrapy to crawl multi-channel SKU data</li>
+            <li>PostgreSQL + pgvector for specs and embeddings</li>
+            <li>Redis for sessions, caching, and rate limiting</li>
+            <li>OpenAI / Azure OpenAI API keys stored in .env</li>
           </ul>
         </div>
       </section>

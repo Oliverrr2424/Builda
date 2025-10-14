@@ -25,7 +25,7 @@ export async function request<TResponse, TBody = unknown>(
 
   if (!response.ok) {
     const errorBody = await response.text()
-    throw new Error(errorBody || 'API 请求失败')
+    throw new Error(errorBody || 'API request failed')
   }
 
   return response.json() as Promise<TResponse>

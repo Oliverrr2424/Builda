@@ -38,12 +38,12 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
       onPlanReceived(plan)
       addMessage({
         role: 'assistant',
-        content: '这是基于当前需求生成的装机建议，详情见右侧方案卡片。',
+        content: 'Here is a build suggestion based on your needs. See the plan card on the right for details.',
       })
     } catch (error) {
       addMessage({
         role: 'assistant',
-        content: error instanceof Error ? error.message : '生成方案失败，请稍后重试。',
+        content: error instanceof Error ? error.message : 'Failed to generate the plan, please try again later.',
       })
     }
   }
@@ -51,8 +51,8 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <h2>对话</h2>
-        <span className="panel-subtitle">描述你的使用场景与预算</span>
+        <h2>Chat</h2>
+        <span className="panel-subtitle">Describe your use case and budget</span>
       </div>
       <div className="chat-window">
         {messages.map((message, index) => (
@@ -60,14 +60,14 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
             key={index}
             className={`chat-bubble ${message.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'}`}
           >
-            <span className="chat-role">{message.role === 'user' ? '你' : 'Builda'}</span>
+            <span className="chat-role">{message.role === 'user' ? 'You' : 'Builda'}</span>
             <p>{message.content}</p>
           </div>
         ))}
         {mutation.isPending && (
           <div className="chat-bubble chat-bubble-assistant">
             <span className="chat-role">Builda</span>
-            <p>正在根据你的需求生成方案...</p>
+            <p>Generating a plan based on your needs...</p>
           </div>
         )}
       </div>
@@ -75,11 +75,11 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
         <textarea
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="例如：预算 1.2 万元，希望畅玩 2K 游戏并兼顾视频剪辑"
+          placeholder="Example: Budget 1200 USD, want smooth 2K gaming and video editing"
           rows={3}
         />
         <button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? '生成中...' : '发送'}
+          {mutation.isPending ? 'Generating...' : 'Send'}
         </button>
       </form>
     </div>

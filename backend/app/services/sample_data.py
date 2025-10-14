@@ -29,31 +29,31 @@ def generate_sample_plan() -> ChatPlanResponse:
             url="https://www.example.com/products/gpu-4070-super",
         ),
         BuildComponent(
-            category="主板",
+            category="Motherboard",
             name="ASUS TUF GAMING B650M-PLUS WIFI",
             price=1299.0,
             vendor="amazon",
         ),
         BuildComponent(
-            category="内存",
+            category="Memory",
             name="Corsair Vengeance 32GB DDR5-6000",
             price=899.0,
             vendor="amazon",
         ),
         BuildComponent(
-            category="固态硬盘",
+            category="SSD",
             name="Samsung 990 PRO 2TB NVMe",
             price=1299.0,
             vendor="amazon",
         ),
         BuildComponent(
-            category="电源",
+            category="Power Supply",
             name="Seasonic Focus GX-750",
             price=899.0,
             vendor="newegg",
         ),
         BuildComponent(
-            category="机箱",
+            category="Case",
             name="Lian Li Lancool 216",
             price=699.0,
             vendor="newegg",
@@ -61,8 +61,8 @@ def generate_sample_plan() -> ChatPlanResponse:
     ]
 
     alternative = AlternativeBuild(
-        title="性价比升级方案",
-        description="将显卡升级为 RTX 4070 Ti SUPER，适合 4K 游戏和创作。",
+        title="Value Upgrade Plan",
+        description="Upgrade the GPU to RTX 4070 Ti SUPER, suitable for 4K gaming and creation.",
         total_price=10999.0,
         components=[
             components[0],
@@ -82,8 +82,8 @@ def generate_sample_plan() -> ChatPlanResponse:
         currency="CNY",
         components=components,
         alternatives=[alternative],
-        summary="针对 2K 高刷新率游戏与内容创作的均衡配置，兼顾性能与静音。",
-        notes="价格基于最近 48 小时抓取数据，仅供参考。",
+        summary="A balanced configuration for 2K high-refresh gaming and content creation, balancing performance and acoustics.",
+        notes="Prices are based on data captured within the last 48 hours and are for reference only.",
     )
 
 
@@ -137,7 +137,7 @@ def validate_build() -> BuildValidationResult:
         is_valid=True,
         issues=[],
         recommendations=[
-            "建议选择 80PLUS 金牌或更高认证的 750W 电源以应对未来升级",
-            "为 NVMe 固态添加散热片以保证长时间性能稳定",
+            "Choose an 80PLUS Gold or higher 750W PSU to handle future upgrades",
+            "Add a heatsink for the NVMe SSD to ensure sustained performance",
         ],
     )

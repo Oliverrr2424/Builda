@@ -15,7 +15,7 @@ export const useChatStore = create<ChatState>((set) => ({
   messages: [
     {
       role: 'assistant',
-      content: '你好，我是你的装机顾问。告诉我预算和用途，我来推荐配置！',
+      content: 'Hello, I am your PC build consultant. Tell me your budget and use case, and I will recommend a configuration!',
     },
   ],
   addMessage: (message) =>
@@ -27,7 +27,7 @@ export const useChatStore = create<ChatState>((set) => ({
       messages: [
         {
           role: 'assistant',
-          content: '你好，我是你的装机顾问。告诉我预算和用途，我来推荐配置！',
+          content: 'Hello, I am your PC build consultant. Tell me your budget and use case, and I will recommend a configuration!',
         },
       ],
     }),
