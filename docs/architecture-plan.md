@@ -1,144 +1,146 @@
-# 系统总体方案
+# System Architecture Plan
 
-## 一、总体架构
+Note: All languages used during development should be English.
 
-- **Web 前端**：React + Next.js（支持 SSR/SSG，兼顾 SEO 与性能）
-- **后端服务**：Python（FastAPI）
-- **数据库**：PostgreSQL 搭配 pgvector 用于语义检索
-- **缓存**：Redis（会话管理、RAG 检索缓存、频控）
-- **数据抓取**：Playwright / Scrapy + 定时调度（GitHub Actions 或 AWS EventBridge）
-- **LLM 网关**：优先 OpenAI GPT-4，备选 Azure OpenAI（企业合规）或 AWS Bedrock（Claude/Llama）
-- **对象存储 / CDN**：Amazon S3 + CloudFront（或 Cloudflare）
-- **监控 / 日志**：OpenTelemetry + Grafana/Prometheus（或 Datadog）
-- **鉴权**：Auth0 / Clerk（或 AWS Cognito）
-- **CI/CD**：GitHub Actions（测试、构建、部署）
+## I. Overall Architecture
 
-> 说明：GPT-4 暂未在 AWS Bedrock 提供，如需 GPT-4 应选择 OpenAI 或 Azure OpenAI。合规优先场景推荐 Azure OpenAI 为主、OpenAI 为备；若坚持全 AWS 生态，可在 Bedrock 选用 Claude 系列替代。
+- **Web Frontend**: React + Next.js (supports SSR/SSG, balances SEO and performance)
+- **Backend Services**: Python (FastAPI)
+- **Database**: PostgreSQL with pgvector for semantic search
+- **Cache**: Redis (session management, RAG retrieval cache, rate limiting)
+- **Data Ingestion**: Playwright / Scrapy + scheduled jobs (GitHub Actions or AWS EventBridge)
+- **LLM Gateway**: Prefer OpenAI GPT-4; alternatives Azure OpenAI (enterprise compliance) or AWS Bedrock (Claude/Llama)
+- **Object Storage / CDN**: Amazon S3 + CloudFront (or Cloudflare)
+- **Observability / Logs**: OpenTelemetry + Grafana/Prometheus (or Datadog)
+- **Auth**: Auth0 / Clerk (or AWS Cognito)
+- **CI/CD**: GitHub Actions (test, build, deploy)
 
-## 二、数据侧：采集与模型化
+> Note: GPT-4 is not currently available on AWS Bedrock. If GPT-4 is required, choose OpenAI or Azure OpenAI. For compliance-first scenarios, Azure OpenAI is recommended as primary and OpenAI as backup. If you must stay in the AWS ecosystem, consider Claude series on Bedrock.
 
-### 2.1 数据源与更新策略
-- **BestBuy**：官方 API（Products/Reviews），按 `categoryPath.id` 获取组件类目。
-- **Amazon**：Product Advertising API，按 ASIN 拉取详情与价格，展示需标注来源。
-- **Newegg**：缺少公共 API，采用 Playwright（Headless Chromium）+ 轮换代理 + 随机等待，遵循 robots.txt 与 TOS，仅抓取公开规格与价格。
+## II. Data: Collection and Modeling
 
-**刷新节奏**
-- 每隔两日执行全量扫描，发现新 SKU、下架或价格剧烈波动。
-- 每日针对热度高或推荐过的 SKU 做价格与库存校准。
+### 2.1 Data Sources and Update Strategy
+- **BestBuy**: Official API (Products/Reviews), fetch categories by `categoryPath.id`.
+- **Amazon**: Product Advertising API, fetch details and prices by ASIN; display must include source attribution.
+- **Newegg**: No public API; use Playwright (Headless Chromium) + rotating proxies + random waits; honor robots.txt and TOS; only scrape public specs and prices.
 
-**合规与反爬**
-- 限速、分布式代理、失败重试退避策略。
-- 对敏感字段脱敏，严格标注来源与价格时间戳。
+**Refresh cadence**
+- Full scan every two days to detect new SKUs, delistings, or major price changes.
+- Daily calibration of price and stock for high-demand or recommended SKUs.
 
-### 2.2 数据库设计
+**Compliance and anti-bot**
+- Rate limiting, distributed proxies, exponential backoff on retries.
+- Mask sensitive fields; strictly label sources and price timestamps.
 
-以 PostgreSQL + pgvector 为核心，主表 `products` 存储通用属性，细分表按品类拆分（如 `cpus`、`gpus` 等）。
+### 2.2 Database Design
 
-关键字段：
-- `products`：`id`、`global_sku`、标题、品牌、类别、来源、价格、库存、评分、`spec_json`、`scene_tags`、`perf_score`、`updated_at`。
-- 各品类表：CPU（插槽、核心/线程、主/加速频率、TDP）、GPU（芯片、显存、TDP、长度）等。
-- `product_prices`：价格历史。
-- `build_templates` / `build_template_items`：预设装机方案。
-- `dialogs`：对话、解析结果与推荐答案。
-- `embeddings_*`：使用 `pgvector` 保存产品与方案的向量表示。
+Centered around PostgreSQL + pgvector. The main table `products` stores common attributes; per-category tables split by type (e.g., `cpus`, `gpus`).
 
-索引策略包括 `products(category, price, perf_score, scene_tags)` 组合索引与 `pgvector` 的 `ivfflat`。
+Key fields:
+- `products`: `id`, `global_sku`, title, brand, category, source, price, stock, rating, `spec_json`, `scene_tags`, `perf_score`, `updated_at`.
+- Per-category tables: CPU (socket, cores/threads, base/boost frequency, TDP), GPU (chip, VRAM, TDP, length), etc.
+- `product_prices`: price history.
+- `build_templates` / `build_template_items`: preset build templates.
+- `dialogs`: conversations, parsed results, and recommended answers.
+- `embeddings_*`: vector representations for products and plans using `pgvector`.
 
-## 三、AI 侧：RAG 流程与提示工程
+Indexing includes a composite index on `products(category, price, perf_score, scene_tags)` and `pgvector`'s `ivfflat`.
 
-### 3.1 主流程
-1. **意图解析**：小模型或规则提取场景、预算、品牌偏好、尺寸需求、软件/游戏等要素。
-2. **候选召回**：将需求文本嵌入后在 `embeddings_products` 与 `embeddings_cases` 中检索 K 个候选，结合价格、场景标签、性能分、规格兼容性进行筛选。
-3. **组装器**：Python 规则层保证兼容性（插槽、内存类型、机箱尺寸、电源余量等），按预算优先满足性能阈值。
-4. **LLM 决策**：将候选清单与约束输入 LLM，生成主方案、替代方案、解释与说明。
-5. **输出**：结构化配置 JSON、对话文案、价格有效期与来源链接。
+## III. AI: RAG Flow and Prompt Engineering
 
-### 3.2 模型选型与路由
-- 主生成：GPT-4（OpenAI 或 Azure OpenAI）。
-- 轻量解析/分类：gpt-4o-mini、gpt-3.5-turbo 或微调后的 Llama-3-8B。
-- 全 AWS 方案：Bedrock 的 Claude 3 替代 GPT-4，Cohere Embed 替代 OpenAI Embedding。
-- Embedding：OpenAI `text-embedding-3-large`，必要时自托管 `nomic-embed-text`。
-- FastAPI 暴露工具函数，配合 Function Calling。
+### 3.1 Main Flow
+1. **Intent parsing**: Use small models or rules to extract scenario, budget, brand preferences, size requirements, software/games, etc.
+2. **Candidate recall**: Embed the requirement text and retrieve K candidates from `embeddings_products` and `embeddings_cases`; filter by price, scenario tags, performance score, and spec compatibility.
+3. **Assembler**: Python rules layer enforces compatibility (socket, memory type, case size, PSU headroom, etc.), prioritizing performance thresholds within budget.
+4. **LLM decisioning**: Provide candidate list and constraints to the LLM to generate the primary plan, alternatives, explanations, and notes.
+5. **Output**: Structured configuration JSON, conversational copy, price validity period, and source links.
 
-### 3.3 关键 Prompt 模版
-- **System Prompt**：设定“资深装机顾问”角色，强调真实数据、兼容性、解释、替代方案。
-- **Planner Prompt**：隐藏链式思考，分析场景、预算分配与约束校验。
-- **Generator Prompt**：输入候选 JSON 与约束，输出包含主方案、总价、替代方案与备注的结构化结果。
+### 3.2 Model Selection and Routing
+- Primary generation: GPT-4 (OpenAI or Azure OpenAI).
+- Lightweight parsing/classification: gpt-4o-mini, gpt-3.5-turbo, or a fine-tuned Llama-3-8B.
+- All-AWS option: Claude 3 on Bedrock instead of GPT-4; Cohere Embed instead of OpenAI Embedding.
+- Embedding: OpenAI `text-embedding-3-large`; self-host `nomic-embed-text` if necessary.
+- Expose FastAPI tool functions with Function Calling.
 
-### 3.4 成本与性能优化
-- Prompt 前缀缓存、对话摘要、RAG 优先命中。
-- 用户频控、并发池、降级策略（GPT-4 → GPT-3.5/Claude）。
-- 监控推荐成功率、用户修改次数与点击转化。
+### 3.3 Key Prompt Templates
+- **System Prompt**: Set the role of a "senior PC build consultant"; emphasize real data, compatibility, explanations, and alternatives.
+- **Planner Prompt**: Hidden chain-of-thought; analyze scenarios, budget allocation, and constraint checks.
+- **Generator Prompt**: Input candidate JSON and constraints; output a structured result including primary plan, total price, alternatives, and notes.
 
-## 四、后端 API 契约（FastAPI）
+### 3.4 Cost and Performance Optimization
+- Prompt prefix caching, conversation summarization, RAG-first strategy.
+- User rate limiting, concurrency pools, graceful degradation (GPT-4 → GPT-3.5/Claude).
+- Monitor recommendation success rate, user modification count, and click-through conversions.
 
-- `POST /api/chat/plan`：根据对话返回装机方案、总价、替代方案、说明与价格时间戳。
-- `GET /api/products/search`：按关键词、类别、价格区间、场景查询产品。
-- `POST /api/builds/validate`：校验方案兼容性与功耗、电源建议。
-- `GET /api/price/history`：返回指定产品的价格历史。
-- `POST /api/feedback`：记录用户反馈、修改原因与购买情况。
+## IV. Backend API Contract (FastAPI)
 
-鉴权采用 JWT（Auth0/Clerk），游客仅开放部分功能。
+- `POST /api/chat/plan`: Return a build plan, total price, alternatives, notes, and price timestamps based on the conversation.
+- `GET /api/products/search`: Query products by keyword, category, price range, and scenario.
+- `POST /api/builds/validate`: Validate compatibility, power consumption, and PSU recommendations.
+- `GET /api/price/history`: Return price history for a given product.
+- `POST /api/feedback`: Record user feedback, reasons for modification, and purchase status.
 
-## 五、前端实现要点（Next.js）
+Authentication uses JWT (Auth0/Clerk). Guests have access to limited features only.
 
-- 聊天主视图：消息流与配置卡片结合。
-- 配置卡片展示部件栅格、总价、来源跳转与替代方案切换。
-- 可选过滤器：预算滑条、场景快捷按钮、机箱尺寸偏好。
-- 提供一键复制清单、导出 PDF，支持 Streaming 输出、乐观 UI、错误提示。
-- 状态管理：Zustand 或 Redux Toolkit；数据层使用 SWR/React Query。
-- 移动端适配、国际化（中英）、货币与度量单位本地化。
-- 埋点：跟踪提问→方案→外链点击→收藏等漏斗。
+## V. Frontend Implementation Notes (Next.js)
 
-## 六、数据同步与清洗
+- Main chat view combines message stream with configuration cards.
+- Configuration cards show component grid, total price, source links, and alternative toggles.
+- Optional filters: budget slider, scenario quick buttons, case size preferences.
+- One-click copy list, export PDF; support streaming output, optimistic UI, and error tips.
+- State management: Zustand or Redux Toolkit; data layer uses SWR/React Query.
+- Mobile adaptation, internationalization (EN/zh), currency and measurement localization.
+- Analytics: track question → plan → external link click → favorite funnel.
 
-- 调度：GitHub Actions/cron（UTC 3:00）触发容器化的同步任务。
-- 流程：抓取 → 规格抽取 → 归一化 → 性能打分 → 标签标注 → 入库。
-- 质量：脏数据检测、去重（`global_sku` 统一规则）。
-- 合规：仅保存事实性规格与价格，图片链接保持原地址或许可缩略图。
+## VI. Data Sync and Cleaning
 
-## 七、监控、可观测与安全
+- Scheduling: GitHub Actions/cron (UTC 3:00) triggers containerized sync jobs.
+- Pipeline: crawl → spec extraction → normalization → performance scoring → tag annotation → storage.
+- Quality: dirty data detection, deduplication (`global_sku` unified rules).
+- Compliance: store only factual specs and prices; keep original image URLs or licensed thumbnails.
 
-- API 指标：P95 延迟、错误率、LLM 耗时与 token 成本。
-- 数据指标：爬虫成功率、SKU 覆盖度、价格更新比率。
-- 业务指标：推荐修改率、外链点击率、回访率。
-- 告警：LLM 错误激增、价格更新超 48h、兼容性失败率高。
-- 安全：HTTPS、CSP、依赖漏洞扫描、速率限制、WAF、密钥管理（Secrets Manager/Parameter Store）、最小权限。
+## VII. Monitoring, Observability, and Security
 
-## 八、里程碑规划（10–12 周）
+- API metrics: P95 latency, error rate, LLM time, and token cost.
+- Data metrics: crawler success rate, SKU coverage, price update ratio.
+- Business metrics: recommendation revision rate, external click-through rate, return rate.
+- Alerts: spikes in LLM errors, price updates older than 48h, high compatibility failure rate.
+- Security: HTTPS, CSP, dependency vulnerability scans, rate limiting, WAF, secret management (Secrets Manager/Parameter Store), least privilege.
 
-- **Sprint 1（周 1–2）**：Next.js + FastAPI 脚手架、鉴权、Postgres/Redis 基础、最小对话流。
-- **Sprint 2（周 3–4）**：数据接入与清洗、pgvector 建库、检索 API。
-- **Sprint 3（周 5–6）**：完整 RAG 流程、兼容性校验、前端配置卡片。
-- **Sprint 4（周 7–8）**：Prompt 优化、缓存、日志观测、A/B 测试、多语言。
-- **Sprint 5（周 9–10）**：SEO、价格历史图、合规审计、灰度试运营。
-- **Sprint 6（周 11–12）**：性能压测、风控、Bug 修复与上线准备。
+## VIII. Milestones (10–12 weeks)
 
-## 九、MVP 验收标准
+- **Sprint 1 (Weeks 1–2)**: Next.js + FastAPI scaffolding, auth, Postgres/Redis basics, minimal chat flow.
+- **Sprint 2 (Weeks 3–4)**: Data ingestion and cleaning, pgvector indexing, retrieval API.
+- **Sprint 3 (Weeks 5–6)**: Full RAG pipeline, compatibility validation, frontend configuration cards.
+- **Sprint 4 (Weeks 7–8)**: Prompt optimization, caching, logging/observability, A/B testing, multi-language.
+- **Sprint 5 (Weeks 9–10)**: SEO, price history chart, compliance audit, canary/beta.
+- **Sprint 6 (Weeks 11–12)**: Performance testing, risk control, bug fixes, launch preparation.
 
-- 相同需求重复询问 90% 以上返回兼容且可购买方案。
-- 价格时间戳 ≤ 48 小时，热销 SKU 日更命中率 ≥ 85%。
-- 首 token 延迟 ≤ 2 秒，完整回答 ≤ 8 秒（RAG 命中时）。
-- 用户对推荐修改不超过 2 处即可满足需求。
-- 所有商品具备来源回链与合规声明。
+## IX. MVP Acceptance Criteria
 
-## 十、落地清单
+- For repeated identical requirements, return compatible and purchasable plans in >90% of cases.
+- Price timestamps ≤ 48 hours; daily update hit rate ≥ 85% for hot SKUs.
+- First-token latency ≤ 2 seconds; full answer ≤ 8 seconds (when RAG hits).
+- Users need to modify no more than two items to meet requirements.
+- All products include source backlinks and compliance statements.
 
-- Docker Compose 环境（web/api/db/redis/worker）。
-- 前端依赖：`next`、`react`、`react-query`、`zustand`、`tailwindcss`、`framer-motion`。
-- 后端依赖：`fastapi`、`pydantic`、`uvicorn`、`httpx`、`sqlalchemy`、`asyncpg`、`pgvector`、`redis`、`tenacity`。
-- 爬虫依赖：`playwright`、`scrapy`、`selectolax`。
-- AI 依赖：`openai`（或 `azure-ai-inference`/`anthropic`）、`sentence-transformers`/`nomic`。
-- Prompt 与 API 契约参考本文档。
-- 申请 BestBuy/PA-API Key，准备代理池与合规说明模板。
-- 使用 Jira/Linear 拆解里程碑为 Story 与验收条件。
+## X. Rollout Checklist
 
-## 推荐的模型与供应商组合
+- Docker Compose environment (web/api/db/redis/worker).
+- Frontend deps: `next`, `react`, `react-query`, `zustand`, `tailwindcss`, `framer-motion`.
+- Backend deps: `fastapi`, `pydantic`, `uvicorn`, `httpx`, `sqlalchemy`, `asyncpg`, `pgvector`, `redis`, `tenacity`.
+- Crawler deps: `playwright`, `scrapy`, `selectolax`.
+- AI deps: `openai` (or `azure-ai-inference`/`anthropic`), `sentence-transformers`/`nomic`.
+- Prompts and API contracts follow this document.
+- Apply for BestBuy/PA-API keys; prepare proxy pool and compliance templates.
+- Use Jira/Linear to break milestones into Stories and acceptance criteria.
 
-- **主力**：Azure OpenAI - GPT-4（企业合规与稳定）。
-- **备选**：OpenAI 直连（降级/扩容）、AWS Bedrock 上 Claude 3（适配全 AWS 方案）。
-- **Embedding**：OpenAI `text-embedding-3-large` 搭配 pgvector，规模扩大后可改用自托管方案。
+## Recommended Models and Vendor Mix
 
-## 环境变量说明
+- **Primary**: Azure OpenAI - GPT-4 (enterprise compliance and stability).
+- **Alternative**: OpenAI direct (degrade/scale), Claude 3 on AWS Bedrock (for all-AWS option).
+- **Embedding**: OpenAI `text-embedding-3-large` with pgvector; switch to self-hosted at scale.
 
-可根据实际需求调整模型供应商、版本号或运行环境变量，以匹配最适合的开发体验。
+## Environment Variables
+
+Adjust model vendors, versions, or runtime environment variables as needed to match the best development experience.
