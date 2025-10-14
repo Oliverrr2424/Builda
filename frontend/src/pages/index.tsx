@@ -1,84 +1,53 @@
-import { useState, useEffect } from 'react'
-import Head from 'next/head'
+import { useState } from 'react'
+
+import { ChatPanel } from '../components/ChatPanel'
+import { Layout } from '../components/Layout'
+import { PlanPreview } from '../components/PlanPreview'
+import type { ChatPlanResponse } from '../types/chat'
 
 export default function Home() {
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/hello')
-      const data = await response.json()
-      setMessage(data.message)
-    } catch (error) {
-      setMessage('连接后端失败')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [])
+  const [plan, setPlan] = useState<ChatPlanResponse | null>(null)
 
   return (
-    <div>
-      <Head>
-        <title>Builda - React + FastAPI</title>
-        <meta name="description" content="React Next.js 前端 + Python FastAPI 后端" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className="container">
-        <h1 className="title">
-          欢迎使用 <span className="highlight">Builda</span>
-        </h1>
-        
-        <p className="description">
-          React + Next.js 前端 + Python FastAPI 后端
-        </p>
-
-        <div className="api-section">
-          <h2>API 测试</h2>
-          <button 
-            className="button" 
-            onClick={fetchData}
-            disabled={loading}
-          >
-            {loading ? '加载中...' : '测试后端连接'}
-          </button>
-          
-          {message && (
-            <div className="message">
-              <strong>后端响应:</strong> {message}
-            </div>
-          )}
+    <Layout>
+      <section className="page-hero">
+        <div>
+          <h1>Builda 智能装机工作台</h1>
+          <p>
+            结合 RAG 检索与 LLM 规划的装机顾问，提供兼容性校验、价格历史与备选方案。
+          </p>
         </div>
-
-        <div className="grid">
-          <div className="card">
-            <h3>前端技术栈</h3>
-            <ul>
-              <li>React 18</li>
-              <li>Next.js 14</li>
-              <li>TypeScript</li>
-              <li>CSS Modules</li>
-            </ul>
-          </div>
-
-          <div className="card">
-            <h3>后端技术栈</h3>
-            <ul>
-              <li>Python 3.11+</li>
-              <li>FastAPI</li>
-              <li>Uvicorn</li>
-              <li>Pydantic</li>
-            </ul>
-          </div>
+        <div className="hero-meta">
+          <span>FastAPI · PostgreSQL · Redis · pgvector</span>
+          <span>Next.js · React Query · Zustand</span>
         </div>
-      </main>
-    </div>
+      </section>
+
+      <div className="layout-grid">
+        <ChatPanel onPlanReceived={setPlan} />
+        <PlanPreview plan={plan} />
+      </div>
+
+      <section className="feature-grid">
+        <div>
+          <h3>规划流程</h3>
+          <ul>
+            <li>意图解析：抽取预算、场景、品牌偏好</li>
+            <li>候选召回：pgvector + Redis 缓存高效检索</li>
+            <li>组装校验：规则层校对功耗与兼容性</li>
+            <li>LLM 生成：主/备方案、说明与价格时间戳</li>
+          </ul>
+        </div>
+        <div>
+          <h3>接入准备</h3>
+          <ul>
+            <li>Playwright/Scrapy 抓取多渠道 SKU 数据</li>
+            <li>PostgreSQL + pgvector 存储规格与嵌入</li>
+            <li>Redis 处理会话、缓存与频控</li>
+            <li>OpenAI / Azure OpenAI API 密钥保存在 .env</li>
+          </ul>
+        </div>
+      </section>
+    </Layout>
   )
 }
