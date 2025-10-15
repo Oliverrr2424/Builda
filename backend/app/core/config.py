@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     azure_openai_endpoint: Optional[str] = None
     azure_openai_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
 
     # Data stores
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/builda"
