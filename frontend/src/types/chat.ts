@@ -4,6 +4,7 @@ export interface BuildComponent {
   price: number
   vendor: string
   url?: string
+  image_url?: string
 }
 
 export interface AlternativeBuild {

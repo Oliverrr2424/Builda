@@ -340,6 +340,19 @@ a {
   color: var(--ink-700);
 }
 
+.plan-summary-heading {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+
+.plan-summary-agent {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-secondary);
+}
+
 .plan-notes {
   font-size: 13px;
   color: var(--accent-secondary);
@@ -353,14 +366,29 @@ a {
 
 .plan-component {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
   padding: 14px 0;
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
 .plan-component:last-child {
   border-bottom: none;
+}
+
+.plan-component-image {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 10px 22px -16px rgba(15, 23, 42, 0.65);
+}
+
+.plan-component-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .plan-component-category {
@@ -495,6 +523,69 @@ a {
   content: '•';
   color: var(--accent-secondary);
   margin-right: 8px;
+}
+
+.progress-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+
+.progress-step-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.4);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.progress-step-indicator::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+}
+
+.progress-step[data-status='active'] {
+  color: var(--ink-700);
+}
+
+.progress-step[data-status='active'] .progress-step-indicator {
+  background: var(--accent);
+}
+
+.progress-step[data-status='active'] .progress-step-indicator::after {
+  border-color: rgba(10, 132, 255, 0.25);
+}
+
+.progress-step[data-status='complete'] {
+  color: var(--accent);
+}
+
+.progress-step[data-status='complete'] .progress-step-indicator {
+  background: var(--accent-secondary);
+}
+
+.progress-step[data-status='error'] {
+  color: #ef4444;
+}
+
+.progress-step[data-status='error'] .progress-step-indicator {
+  background: #ef4444;
 }
 
 @media (max-width: 1024px) {

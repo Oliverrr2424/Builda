@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useApiMutation } from '../hooks/useApi'
 import { useChatStore } from '../store/chatStore'
 import type { ChatPlanResponse } from '../types/chat'
@@ -7,24 +7,73 @@ interface ChatPanelProps {
   onPlanReceived: (plan: ChatPlanResponse) => void
 }
 
+type StepStatus = 'idle' | 'active' | 'complete' | 'error'
+
+const PROGRESS_STEPS = [
+  'Confirming requirements',
+  'Querying product database',
+  'Checking compatibility',
+  'Finalizing configuration',
+]
+
 export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
   const { messages, addMessage } = useChatStore()
   const [input, setInput] = useState('')
+  const [stepStatuses, setStepStatuses] = useState<StepStatus[]>(() => PROGRESS_STEPS.map(() => 'idle'))
+  const timersRef = useRef<number[]>([])
 
   const quickPrompts = [
     {
-      label: '创作工作站 · ¥15000',
-      content: '预算15000人民币，需要4K剪辑和三屏设计，机箱要静音。',
+      label: 'Creator workstation · $2200',
+      content: 'Budget 2200 USD, need buttery-smooth 4K video editing with a quiet case and two 27-inch monitors.',
     },
     {
-      label: '电竞旗舰 · $2500',
+      label: 'Flagship gaming · $2500',
       content: 'Budget 2500 USD, want smooth 4K AAA gaming with ray tracing and Wi-Fi 7.',
     },
     {
-      label: '紧凑主机 · ¥8000',
-      content: '预算8000人民币，mini-ITX机箱，要兼顾AI绘图和日常办公。',
+      label: 'Compact AI rig · $1400',
+      content: 'Budget 1400 USD, prefer a mini-ITX build that balances AI image generation and everyday productivity.',
     },
   ]
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach((timer) => window.clearTimeout(timer))
+    timersRef.current = []
+  }, [])
+
+  const startProgress = useCallback(() => {
+    clearTimers()
+    setStepStatuses(PROGRESS_STEPS.map((_, index) => (index === 0 ? 'active' : 'idle')))
+    PROGRESS_STEPS.slice(1).forEach((_, index) => {
+      const timer = window.setTimeout(() => {
+        setStepStatuses((current) =>
+          current.map((status, statusIndex) => {
+            if (statusIndex < index + 1) {
+              return 'complete'
+            }
+            if (statusIndex === index + 1) {
+              return 'active'
+            }
+            return status
+          }),
+        )
+      }, (index + 1) * 1200)
+      timersRef.current.push(timer)
+    })
+  }, [clearTimers])
+
+  const completeProgress = useCallback(() => {
+    clearTimers()
+    setStepStatuses(PROGRESS_STEPS.map(() => 'complete'))
+  }, [clearTimers])
+
+  const failProgress = useCallback(() => {
+    clearTimers()
+    setStepStatuses(PROGRESS_STEPS.map((_, index) => (index < PROGRESS_STEPS.length - 1 ? 'complete' : 'error')))
+  }, [clearTimers])
+
+  useEffect(() => () => clearTimers(), [clearTimers])
 
   const mutation = useApiMutation<ChatPlanResponse, {
     messages: { role: string; content: string }[]
@@ -39,13 +88,14 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
     const newMessage = { role: 'user' as const, content: input.trim() }
     addMessage(newMessage)
     setInput('')
+    startProgress()
 
     const payload = {
       messages: [...messages, newMessage].map((message) => ({
         role: message.role,
         content: message.content,
       })),
-      currency: 'CNY',
+      currency: 'USD',
     }
 
     try {
@@ -55,7 +105,9 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
         role: 'assistant',
         content: 'Here is a build suggestion based on your needs. See the plan card on the right for details.',
       })
+      completeProgress()
     } catch (error) {
+      failProgress()
       addMessage({
         role: 'assistant',
         content: error instanceof Error ? error.message : 'Failed to generate the plan, please try again later.',
@@ -68,6 +120,14 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
       <div className="panel-header">
         <h2>Plan with Builda</h2>
         <span className="panel-subtitle">Describe your workflow. Gemini shapes the configuration.</span>
+      </div>
+      <div className="progress-steps">
+        {PROGRESS_STEPS.map((step, index) => (
+          <div key={step} className="progress-step" data-status={stepStatuses[index]}>
+            <span className="progress-step-indicator" aria-hidden="true" />
+            <span>{step}</span>
+          </div>
+        ))}
       </div>
       <div className="prompt-chips">
         {quickPrompts.map((prompt) => (

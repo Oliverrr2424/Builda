@@ -16,8 +16,8 @@ class ChatPlanRequest(BaseModel):
     budget: Optional[float] = Field(
         default=None, description="User budget cap, in USD or CNY"
     )
-    currency: str = Field(default="CNY", description="Currency unit for the budget")
-    locale: str = Field(default="zh-CN", description="User preferred locale information")
+    currency: str = Field(default="USD", description="Currency unit for the budget")
+    locale: str = Field(default="en-US", description="User preferred locale information")
 
 
 class BuildComponent(BaseModel):
@@ -26,6 +26,7 @@ class BuildComponent(BaseModel):
     price: float = Field(..., description="Component price")
     vendor: str = Field(..., description="Data source")
     url: Optional[str] = Field(default=None, description="Product detail URL")
+    image_url: Optional[str] = Field(default=None, description="Product thumbnail URL")
 
 
 class AlternativeBuild(BaseModel):

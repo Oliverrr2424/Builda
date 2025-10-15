@@ -1,135 +1,141 @@
-# Builda - React + FastAPI 全栈项目
+# Builda – React + FastAPI full-stack project
 
-一个现代化的全栈 Web 应用，使用 React + Next.js 作为前端，Python FastAPI 作为后端。
+A modern full-stack web application that pairs a Next.js 14 frontend with a FastAPI backend. Builda demonstrates an AI-assisted PC configuration flow powered by Gemini planning, curated sample data, and a polished glassmorphism UI.
 
-## 🚀 技术栈
+## 🚀 Tech stack
 
-### 前端
-- **React 18** - 用户界面库
-- **Next.js 14** - React 框架
-- **TypeScript** - 类型安全的 JavaScript
-- **CSS Modules** - 样式管理
+### Frontend
+- **React 18** – component-driven UI library
+- **Next.js 14** – hybrid rendering framework
+- **TypeScript** – static typing for JavaScript
+- **CSS Modules** – scoped styling with glassmorphic flair
 
-### 后端
-- **Python 3.11+** - 编程语言
-- **FastAPI** - 现代、快速的 Web 框架
-- **Uvicorn** - ASGI 服务器
-- **Pydantic** - 数据验证和设置管理
+### Backend
+- **Python 3.11+** – application runtime
+- **FastAPI** – blazing-fast ASGI framework
+- **Uvicorn** – production-ready ASGI server
+- **Pydantic** – declarative settings and schema validation
 
-## 📁 项目结构
+## 📁 Project structure
 
 ```
 Builda/
-├── frontend/                 # Next.js 前端
+├── frontend/                 # Next.js frontend
 │   ├── src/
-│   │   ├── pages/           # 页面组件
-│   │   └── styles/          # 样式文件
-│   ├── package.json         # 前端依赖
-│   ├── tsconfig.json        # TypeScript 配置
-│   ├── next.config.js       # Next.js 配置
-│   └── Dockerfile          # 前端 Docker 配置
-├── backend/                 # FastAPI 后端
-│   ├── main.py             # 主应用文件
-│   ├── requirements.txt    # Python 依赖
-│   ├── env.example         # 环境变量示例
-│   └── Dockerfile          # 后端 Docker 配置
-├── docker-compose.yml      # Docker 编排配置
-├── .gitignore             # Git 忽略文件
-└── README.md              # 项目文档
+│   │   ├── pages/           # Page-level React components
+│   │   └── styles/          # Global and modular stylesheets
+│   ├── package.json         # Frontend dependencies
+│   ├── tsconfig.json        # TypeScript configuration
+│   ├── next.config.js       # Next.js configuration
+│   └── Dockerfile           # Frontend container definition
+├── backend/                  # FastAPI backend
+│   ├── app/                # API, schemas, and services
+│   ├── main.py             # Application entry point
+│   ├── requirements.txt    # Python dependencies
+│   └── Dockerfile          # Backend container definition
+├── docker-compose.yml       # Multi-service orchestration
+├── scripts/                 # Convenience scripts for local dev
+└── README.md                # Project documentation
 ```
 
-## 🛠️ 安装和运行
+## 🛠️ Getting started
 
-### 方式一：本地开发
+### Option 1: local development
 
-#### 前端
+#### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-前端将在 http://localhost:3000 运行
+The frontend runs at http://localhost:3000.
 
-#### 后端
+#### Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 python main.py
 ```
-后端将在 http://localhost:8000 运行
+The backend runs at http://localhost:8000.
 
-### 方式二：使用 Docker
+### Option 2: Docker
 
 ```bash
-# 构建并启动所有服务
+# Build and start all services
 docker-compose up --build
 
-# 后台运行
+# Start in detached mode
 docker-compose up -d --build
 ```
 
-访问：
-- 前端：http://localhost:3000
-- 后端 API：http://localhost:8000
-- API 文档：http://localhost:8000/docs
+Access points:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API docs: http://localhost:8000/docs
 
-## 📚 API 接口
+## 📚 API surface
 
-### 基础接口
-- `GET /` - 根路径
-- `GET /hello` - Hello 接口
-- `GET /health` - 健康检查
+### Core endpoints
+- `GET /` – root health message
+- `GET /hello` – hello world endpoint
+- `GET /health` – health check probe
 
-### 用户管理
-- `GET /users` - 获取所有用户
-- `POST /users` - 创建新用户
-- `GET /users/{user_id}` - 根据ID获取用户
-- `DELETE /users/{user_id}` - 删除用户
+### User management sample
+- `GET /users` – list users
+- `POST /users` – create a user
+- `GET /users/{user_id}` – fetch user by ID
+- `DELETE /users/{user_id}` – delete user by ID
 
-## 🔧 开发说明
+### Gemini planning flow
+- `POST /chat/plan` – request a Gemini-powered PC configuration with sample fallback
+- `POST /builds/validate` – run compatibility validation on a submitted build
+- `GET /products/search` – search vector-indexed sample products
+- `GET /price/history/{sku}` – inspect mock price history data
 
-### 前端开发
-- 使用 TypeScript 确保类型安全
-- 支持热重载开发
-- 自动代理 API 请求到后端
+## 🔧 Development notes
 
-### 后端开发
-- 使用 FastAPI 自动生成 API 文档
-- 支持 CORS 跨域请求
-- 内置数据验证和错误处理
+### Frontend
+- Written in TypeScript with strict typing
+- Hot-module replacement for a fast feedback loop
+- Proxy-ready for calling the FastAPI backend during dev
 
-### 环境变量
-复制 `backend/env.example` 为 `backend/.env` 并配置相应参数。
+### Backend
+- Automatic OpenAPI docs via FastAPI
+- CORS enabled for the Next.js frontend
+- Centralized settings management using Pydantic BaseSettings
 
-## 📝 开发命令
+### Environment variables
+Copy `backend/env.example` to `backend/.env` and provide the required values (e.g., Gemini API key).
 
-### 前端
+## 📝 Development commands
+
+### Frontend
 ```bash
-npm run dev      # 开发模式
-npm run build    # 构建生产版本
-npm run start    # 启动生产版本
-npm run lint     # 代码检查
+npm run dev      # Start the dev server
+npm run build    # Compile a production build
+npm run start    # Serve the production build
+npm run lint     # Run ESLint checks
 ```
 
-### 后端
+### Backend
 ```bash
-python main.py                    # 直接运行
-uvicorn main:app --reload        # 开发模式
-uvicorn main:app --host 0.0.0.0  # 生产模式
+python main.py                    # Launch the FastAPI app
+uvicorn main:app --reload         # Development server with reloads
+uvicorn main:app --host 0.0.0.0   # Production-style server
 ```
 
-## 🤝 贡献
+## 🤝 Contributing
 
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 许可证
+## 📄 License
 
-此项目使用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+This project is licensed under the MIT License – see [LICENSE](LICENSE) for details.
 
-## 🆘 支持
+## 🆘 Support
 
-如果您遇到任何问题或有任何疑问，请提交 Issue 或联系维护者。
+If you hit any issues or have questions, please open an issue or contact the maintainers.
