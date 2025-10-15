@@ -8,7 +8,7 @@ router = APIRouter(prefix="/builds", tags=["builds"])
 
 @router.post("/validate", response_model=BuildValidationResult)
 async def validate(payload: BuildValidationRequest) -> BuildValidationResult:
-    """执行基础的兼容性校验示例。"""
+    """Run a basic compatibility validation example."""
 
-    # TODO: 根据 payload.items 实现真实的兼容性检测逻辑
+    # TODO: Implement real compatibility validation logic using payload.items
     return validate_build()

@@ -17,7 +17,7 @@ async def generate_plan(
     payload: ChatPlanRequest,
     settings: Settings = Depends(get_settings),
 ) -> ChatPlanResponse:
-    """调用 Gemini 生成方案，若不可用则回退示例方案。"""
+    """Request a configuration plan from Gemini and fall back to the sample plan when unavailable."""
 
     planner = get_gemini_planner(settings.gemini_api_key)
     if planner.available:

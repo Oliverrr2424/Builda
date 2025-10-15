@@ -1,40 +1,40 @@
 #!/bin/bash
 
-echo "启动 Builda 开发环境..."
+echo "Starting the Builda development environment..."
 
-# 检查 Node.js 和 Python 是否安装
+# Ensure Node.js and Python are available
 if ! command -v node &> /dev/null; then
-    echo "错误: 未找到 Node.js，请先安装 Node.js"
+    echo "Error: Node.js not found. Please install Node.js first."
     exit 1
 fi
 
 if ! command -v python3 &> /dev/null && ! command -v python &> /dev/null; then
-    echo "错误: 未找到 Python，请先安装 Python"
+    echo "Error: Python not found. Please install Python first."
     exit 1
 fi
 
-# 启动后端
-echo "启动后端服务..."
+# Start backend
+echo "Starting backend service..."
 cd backend
 python main.py &
 BACKEND_PID=$!
 
-# 等待后端启动
-echo "等待后端启动..."
+# Wait for backend to boot
+echo "Waiting for backend to boot..."
 sleep 3
 
-# 启动前端
-echo "启动前端服务..."
+# Start frontend
+echo "Starting frontend service..."
 cd ../frontend
 npm run dev &
 FRONTEND_PID=$!
 
-echo "开发环境启动完成！"
-echo "前端: http://localhost:3000"
-echo "后端: http://localhost:8000"
-echo "API 文档: http://localhost:8000/docs"
+echo "Development environment is ready!"
+echo "Frontend: http://localhost:3000"
+echo "Backend: http://localhost:8000"
+echo "API docs: http://localhost:8000/docs"
 echo ""
-echo "按 Ctrl+C 停止所有服务"
+echo "Press Ctrl+C to stop all services"
 
-# 等待用户中断
+# Wait for user interruption
 wait

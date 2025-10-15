@@ -19,7 +19,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root() -> dict:
-    return {"message": "欢迎使用 Builda API", "environment": settings.environment}
+    return {"message": "Welcome to the Builda API", "environment": settings.environment}
 
 
 app.include_router(api_router)

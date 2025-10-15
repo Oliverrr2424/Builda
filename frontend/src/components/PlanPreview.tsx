@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 import type { ChatPlanResponse } from '../types/chat'
 
 interface PlanPreviewProps {
@@ -31,24 +33,37 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
         </div>
       </div>
       <div className="plan-summary">
+        <h3 className="plan-summary-heading">Gemini configuration summary</h3>
+        <p className="plan-summary-agent">Delivered by a dedicated Gemini summarizer agent.</p>
         <p>{plan.summary}</p>
         {plan.notes && <p className="plan-notes">{plan.notes}</p>}
       </div>
       <div className="plan-components">
         {plan.components.map((component) => (
           <div key={`${component.category}-${component.name}`} className="plan-component">
-            <div>
-              <span className="plan-component-category">{component.category}</span>
-              <p className="plan-component-name">{component.name}</p>
-            </div>
-            <div className="plan-component-meta">
-              <span className="plan-component-vendor">{component.vendor}</span>
-              <strong>{component.price.toLocaleString()} {plan.currency}</strong>
-              {component.url && (
-                <a className="plan-component-link" href={component.url} target="_blank" rel="noreferrer">
-                  View
-                </a>
-              )}
+            {component.image_url && (
+              <Image
+                className="plan-component-image"
+                src={component.image_url}
+                alt={`${component.category} ${component.name}`}
+                width={72}
+                height={72}
+              />
+            )}
+            <div className="plan-component-content">
+              <div>
+                <span className="plan-component-category">{component.category}</span>
+                <p className="plan-component-name">{component.name}</p>
+              </div>
+              <div className="plan-component-meta">
+                <span className="plan-component-vendor">{component.vendor}</span>
+                <strong>{component.price.toLocaleString()} {plan.currency}</strong>
+                {component.url && (
+                  <a className="plan-component-link" href={component.url} target="_blank" rel="noreferrer">
+                    View product
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         ))}
