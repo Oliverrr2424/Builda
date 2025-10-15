@@ -14,6 +14,7 @@ frontend/.next/
 frontend/out/
 backend/.mypy_cache/
 backend/.pytest_cache/
+backend/app/data/vector_store.json
 
 # Python packaging
 *.egg-info/

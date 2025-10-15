@@ -1,0 +1,74 @@
+[
+  {
+    "sku": "newegg-rtx4070s-white",
+    "name": "MSI GeForce RTX 4070 SUPER 12G GAMING X SLIM WHITE",
+    "category": "GPU",
+    "price": 769.99,
+    "currency": "USD",
+    "vendor": "newegg",
+    "rating": 4.8,
+    "stock_status": "in_stock",
+    "specs": {
+      "vram": "12GB GDDR6X",
+      "cooling": "Triple Fan",
+      "length": "307 mm",
+      "scene_tags": ["4k gaming", "ray tracing", "content creation"]
+    },
+    "url": "https://www.newegg.com/msi-geforce-rtx-4070-super-gaming-x-slim-white/p/N82E16814137846",
+    "updated_at": "2024-06-12T10:00:00+00:00"
+  },
+  {
+    "sku": "newegg-7800x3d",
+    "name": "AMD Ryzen 7 7800X3D 8-Core 4.2 GHz Socket AM5",
+    "category": "CPU",
+    "price": 369.0,
+    "currency": "USD",
+    "vendor": "newegg",
+    "rating": 4.9,
+    "stock_status": "in_stock",
+    "specs": {
+      "cores": 8,
+      "threads": 16,
+      "tdp": "120W",
+      "scene_tags": ["gaming", "productivity"]
+    },
+    "url": "https://www.newegg.com/amd-ryzen-7-7800x3d/p/N82E16819113793",
+    "updated_at": "2024-06-12T09:30:00+00:00"
+  },
+  {
+    "sku": "canadacomputers-rog-strix-b650e",
+    "name": "ASUS ROG STRIX B650E-F GAMING WIFI AM5 ATX",
+    "category": "Motherboard",
+    "price": 369.99,
+    "currency": "CAD",
+    "vendor": "canadacomputers",
+    "rating": 4.6,
+    "stock_status": "limited",
+    "specs": {
+      "socket": "AM5",
+      "chipset": "B650E",
+      "form_factor": "ATX",
+      "scene_tags": ["gaming", "overclocking"]
+    },
+    "url": "https://www.canadacomputers.com/product_info.php?cPath=26_1832&item_id=230146",
+    "updated_at": "2024-06-11T21:15:00+00:00"
+  },
+  {
+    "sku": "canadacomputers-lexar-nm790",
+    "name": "Lexar NM790 2TB NVMe PCIe Gen4 x4 SSD",
+    "category": "SSD",
+    "price": 199.99,
+    "currency": "CAD",
+    "vendor": "canadacomputers",
+    "rating": 4.7,
+    "stock_status": "in_stock",
+    "specs": {
+      "interface": "PCIe 4.0 x4",
+      "read": "7400 MB/s",
+      "write": "6500 MB/s",
+      "scene_tags": ["gaming", "content creation", "workstation"]
+    },
+    "url": "https://www.canadacomputers.com/product_info.php?cPath=179_4221&item_id=235600",
+    "updated_at": "2024-06-11T20:45:00+00:00"
+  }
+]

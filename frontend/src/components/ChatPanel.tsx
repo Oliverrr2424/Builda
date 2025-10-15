@@ -11,6 +11,21 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
   const { messages, addMessage } = useChatStore()
   const [input, setInput] = useState('')
 
+  const quickPrompts = [
+    {
+      label: '创作工作站 · ¥15000',
+      content: '预算15000人民币，需要4K剪辑和三屏设计，机箱要静音。',
+    },
+    {
+      label: '电竞旗舰 · $2500',
+      content: 'Budget 2500 USD, want smooth 4K AAA gaming with ray tracing and Wi-Fi 7.',
+    },
+    {
+      label: '紧凑主机 · ¥8000',
+      content: '预算8000人民币，mini-ITX机箱，要兼顾AI绘图和日常办公。',
+    },
+  ]
+
   const mutation = useApiMutation<ChatPlanResponse, {
     messages: { role: string; content: string }[]
     budget?: number
@@ -49,10 +64,22 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
   }
 
   return (
-    <div className="panel">
+    <div className="panel panel-glass">
       <div className="panel-header">
-        <h2>Chat</h2>
-        <span className="panel-subtitle">Describe your use case and budget</span>
+        <h2>Plan with Builda</h2>
+        <span className="panel-subtitle">Describe your workflow. Gemini shapes the configuration.</span>
+      </div>
+      <div className="prompt-chips">
+        {quickPrompts.map((prompt) => (
+          <button
+            key={prompt.label}
+            type="button"
+            onClick={() => setInput(prompt.content)}
+            disabled={mutation.isPending}
+          >
+            {prompt.label}
+          </button>
+        ))}
       </div>
       <div className="chat-window">
         {messages.map((message, index) => (
@@ -78,9 +105,12 @@ export function ChatPanel({ onPlanReceived }: ChatPanelProps) {
           placeholder="Example: Budget 1200 USD, want smooth 2K gaming and video editing"
           rows={3}
         />
-        <button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Generating...' : 'Send'}
-        </button>
+        <div className="chat-form-footer">
+          <span className="chat-form-hint">Enter to send • Shift + Enter for new line</span>
+          <button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Generating…' : 'Send to Gemini'}
+          </button>
+        </div>
       </form>
     </div>
   )

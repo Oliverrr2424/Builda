@@ -7,7 +7,7 @@ interface PlanPreviewProps {
 export function PlanPreview({ plan }: PlanPreviewProps) {
   if (!plan) {
     return (
-      <div className="panel">
+      <div className="panel panel-glass">
         <div className="panel-header">
           <h2>Plan Card</h2>
           <span className="panel-subtitle">Generated build plans will be shown here</span>
@@ -20,12 +20,15 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
   }
 
   return (
-    <div className="panel">
+    <div className="panel panel-glass">
       <div className="panel-header">
         <h2>Primary Plan</h2>
-        <span className="panel-subtitle">
-          Approx. total {plan.total_price.toLocaleString()} {plan.currency}
-        </span>
+        <div className="plan-header-meta">
+          <span className="plan-total-pill">
+            {plan.total_price.toLocaleString(undefined, { maximumFractionDigits: 2 })} {plan.currency}
+          </span>
+          <span className="plan-subtitle">Generated at {new Date(plan.generated_at).toLocaleTimeString()}</span>
+        </div>
       </div>
       <div className="plan-summary">
         <p>{plan.summary}</p>
@@ -39,10 +42,13 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
               <p className="plan-component-name">{component.name}</p>
             </div>
             <div className="plan-component-meta">
-              <span>{component.vendor}</span>
-              <strong>
-                {component.price.toLocaleString()} {plan.currency}
-              </strong>
+              <span className="plan-component-vendor">{component.vendor}</span>
+              <strong>{component.price.toLocaleString()} {plan.currency}</strong>
+              {component.url && (
+                <a className="plan-component-link" href={component.url} target="_blank" rel="noreferrer">
+                  View
+                </a>
+              )}
             </div>
           </div>
         ))}
@@ -57,8 +63,8 @@ export function PlanPreview({ plan }: PlanPreviewProps) {
                   <h4>{alternative.title}</h4>
                   <p>{alternative.description}</p>
                 </div>
-                <span>
-                  Total {alternative.total_price.toLocaleString()} {plan.currency}
+                <span className="plan-alternative-total">
+                  {alternative.total_price.toLocaleString()} {plan.currency}
                 </span>
               </div>
               <ul>

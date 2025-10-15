@@ -21,15 +21,19 @@ export function Layout({
       </Head>
       <div className="layout-root">
         <header className="layout-header">
+          <div className="layout-header-overlay" />
           <div className="layout-header-content">
-            <div>
-              <span className="layout-brand">Builda</span>
-              <p className="layout-subtitle">React + FastAPI PC build recommendation platform</p>
+            <div className="layout-brand-group">
+              <span className="layout-brand">Builda Studio</span>
+              <p className="layout-subtitle">Gemini-orchestrated PC architecture lab</p>
             </div>
-            <div className="layout-tech-stack">
-              <span>LLM-powered build planning</span>
-              <span>RAG retrieval and compatibility validation</span>
-            </div>
+            <nav className="layout-nav">
+              <a href="#workflow">Workflow</a>
+              <a href="#features">Features</a>
+              <a href="https://ai.google.dev/gemini-api" target="_blank" rel="noreferrer">
+                Gemini API
+              </a>
+            </nav>
           </div>
         </header>
         <main className="layout-main">{children}</main>
